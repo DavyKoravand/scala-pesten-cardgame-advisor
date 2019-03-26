@@ -26,7 +26,7 @@ object pestenAdvisor {
 
   def adviseSimpleMove(topCard: Card, myCards: List[Card], usedCards: List[Card], debt: Int): Either[Card, Grab] = {
     // If we have debt, there's nothing we can do without special cards
-    if (hasDebt(debt)) return box(grab())
+    if (hasDebt(debt)) return box(grab("We have a debt, but since we have no special cards, we are forced to grab the cards."))
 
     // Check if we can win
     val winCondition = checkDirectWinCondition(topCard, myCards)
@@ -34,7 +34,7 @@ object pestenAdvisor {
 
     // If not, decide on a card based on rarity
     val myFilteredCards = possibleMoves(topCard, myCards)
-    myFilteredCards.isEmpty ? box(grab()) | box(determineMostCommonCard(myFilteredCards, usedCards))
+    myFilteredCards.isEmpty ? box(grab("None of our cards can be placed atop the current card.")) | box(determineMostCommonCard(myFilteredCards, usedCards))
   }
 
   def adviseComplexMove(topCard: Card, myCards: List[Card], usedCards: List[Card], playerCount: Int, knocked: List[Int], debt: Int): Either[Card, Grab] = {
@@ -46,6 +46,13 @@ object pestenAdvisor {
     if (winCondition != null) return box(winCondition)
 
     // If not, determine the most logical card to use
-    null // TODO
+    oneOf(
+      box(grab("None of our cards can be placed atop the current card.")),
+      box(determineLogicDebt(topCard, myCards, knocked)),
+      box(determineLogicA(topCard, myCards, playerCount, knocked)),
+      box(determineLogicEight(topCard, myCards, knocked)),
+      box(determineLogicJ()),
+      box(adviseSimpleMove(topCard, myCards, usedCards, debt))
+    )
   }
 }

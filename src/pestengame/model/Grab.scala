@@ -1,7 +1,7 @@
 package pestengame.model
 
-class Grab {
+class Grab(reason: String) {
   override def toString: String = {
-    "Grab a new card from the stack"
+    "Grab a new card from the stack. Reason: " + reason
   }
 }

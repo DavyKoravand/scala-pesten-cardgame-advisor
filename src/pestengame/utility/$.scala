@@ -30,8 +30,11 @@ object $ {
     value != null
   }
 
-  def oneOf[T](a: T, b: T): T = {
-    if (a == null) b else a
+  def oneOf[T](default: T, options: T*): T = {
+    for (option <- options)
+      if (option != null) return option
+
+    default
   }
 
   def len(list: List[Any]): Int = {

@@ -61,8 +61,16 @@ object pestenHelper {
     Right(grab)
   }
 
-  def grab(): Grab = {
-    new Grab()
+  def box(none: Null): Either[Card, Grab] = {
+    null
+  }
+
+  def box(either: Either[Card, Grab]): Either[Card, Grab] = {
+    either
+  }
+
+  def grab(reason: String): Grab = {
+    new Grab(reason)
   }
 
   def checkWinConditions(topCard: Card, myCards: List[Card]): Card = {
@@ -117,7 +125,7 @@ object pestenHelper {
   def handleDebt(myCards: List[Card], usedCards: List[Card], playerCount: Int, debt: Int): Either[Card, Grab] = {
     // Find all twos and jokers
     val debtCards = findDebtCards(myCards)
-    if (debtCards.isEmpty) return box(grab())
+    if (debtCards.isEmpty) return box(grab("There is a debt, but we have no 2s or jokers."))
 
     // If we have five players, we should just place a card, since we most likely won't be chained
     // If the debt has surpassed five, we should also just place a card to avoid having to pay it all
@@ -125,7 +133,7 @@ object pestenHelper {
 
     // Determine the best card based on the probability of being chained
     minus(7, len(findDebtCards(usedCards)), len(debtCards)) match {
-      case x if minus(x, playerCount) > 1 && len(debtCards) == 1 => box(grab())
+      case x if minus(x, playerCount) > 1 && len(debtCards) == 1 => box(grab("While we do have a debt card, there is a reasonable chance that it will be chained back to us."))
       case _ => box(lowestDebtCard(debtCards))
     }
   }
@@ -146,5 +154,24 @@ object pestenHelper {
       if (card.value() == card.Joker) return card
 
     random(debtCards)
+  }
+
+  def determineLogicDebt(topCard: Card, myCards: List[Card], knocked: List[Int]): Card = {
+    val validDebtCards = possibleMoves(topCard, findDebtCards(myCards))
+    if (validDebtCards.nonEmpty && knocked.contains(1)) lowestDebtCard(validDebtCards) else null
+  }
+
+  def determineLogicA(topCard: Card, myCards: List[Card], playerCount: Int, knocked: List[Int]): Card ={
+    val validACards = possibleMoves(topCard, filterCardsByValue(myCards, 1))
+    if (validACards.nonEmpty && knocked.contains(minus(playerCount, 1))) random(validACards) else null
+  }
+
+  def determineLogicEight(topCard: Card, myCards: List[Card], knocked: List[Int]): Card = {
+    val validEightCards = possibleMoves(topCard, filterCardsByValue(myCards, 8))
+    if (validEightCards.nonEmpty && knocked.contains(1)) random(validEightCards) else null
+  }
+
+  def determineLogicJ(): Card = {
+null
   }
 }
