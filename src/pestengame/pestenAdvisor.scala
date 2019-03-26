@@ -39,7 +39,7 @@ object pestenAdvisor {
 
   def adviseComplexMove(topCard: Card, myCards: List[Card], usedCards: List[Card], playerCount: Int, knocked: List[Int], debt: Int): Either[Card, Grab] = {
     // If there is debt, handle it accordingly
-    if (hasDebt(debt)) return handleDebt(myCards, usedCards, playerCount)
+    if (hasDebt(debt)) return handleDebt(myCards, usedCards, playerCount, debt)
 
     // Check if we can win
     val winCondition = checkWinConditions(topCard, myCards)

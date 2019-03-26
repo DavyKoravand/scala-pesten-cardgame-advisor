@@ -114,16 +114,37 @@ object pestenHelper {
     debt > 0
   }
 
-  def handleDebt(myCards: List[Card], usedCards: List[Card], playerCount: Int): Either[Card, Grab] = {
-    // TODO, if no 2s or jokers are used and we only have one two/joker, just grab
-    // Also keep in mind how many players there are to prevent a chain of debt
-
+  def handleDebt(myCards: List[Card], usedCards: List[Card], playerCount: Int, debt: Int): Either[Card, Grab] = {
     // Find all twos and jokers
-    val debtCards = filterCardsByValue(myCards, 2).union(filterCardsByValue(myCards, myCards.head.Joker()))
+    val debtCards = findDebtCards(myCards)
     if (debtCards.isEmpty) return box(grab())
 
+    // If we have five players, we should just place a card, since we most likely won't be chained
+    // If the debt has surpassed five, we should also just place a card to avoid having to pay it all
+    if (playerCount >= 5 || debt > 5) return box(lowestDebtCard(debtCards))
 
+    // Determine the best card based on the probability of being chained
+    minus(7, len(findDebtCards(usedCards)), len(debtCards)) match {
+      case x if minus(x, playerCount) > 1 && len(debtCards) == 1 => box(grab())
+      case _ => box(lowestDebtCard(debtCards))
+    }
+  }
 
-    null
+  def findDebtCards(cards: List[Card]): List[Card] = {
+    filterCardsByValue(cards, 2).union(filterCardsByValue(cards, 14))
+  }
+
+  def lowestDebtCard(debtCards: List[Card]): Card = {
+    for (card <- debtCards)
+      if (card.value() == 2) return card
+
+    random(debtCards)
+  }
+
+  def highestDebtCard(debtCards: List[Card]): Card = {
+    for (card <- debtCards)
+      if (card.value() == card.Joker) return card
+
+    random(debtCards)
   }
 }
