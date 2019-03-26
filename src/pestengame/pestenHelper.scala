@@ -109,4 +109,21 @@ object pestenHelper {
   def filterCardsBySymbol(cards: List[Card], symbol: Char): List[Card] = {
     cards.filter(card => card.symbol() == symbol)
   }
+
+  def hasDebt(debt: Int): Boolean = {
+    debt > 0
+  }
+
+  def handleDebt(myCards: List[Card], usedCards: List[Card], playerCount: Int): Either[Card, Grab] = {
+    // TODO, if no 2s or jokers are used and we only have one two/joker, just grab
+    // Also keep in mind how many players there are to prevent a chain of debt
+
+    // Find all twos and jokers
+    val debtCards = filterCardsByValue(myCards, 2).union(filterCardsByValue(myCards, myCards.head.Joker()))
+    if (debtCards.isEmpty) return box(grab())
+
+
+
+    null
+  }
 }

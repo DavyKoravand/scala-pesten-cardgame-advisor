@@ -12,15 +12,22 @@ object pestenAdvisor {
     * @param myCards The cards in the hand of the user.
     * @param usedCards The known cards that have already been used, if any.
     * @param playerCount The amount of players participating.
-    * @param nextKnocked Whether the next player has knocked on the table (has 1 card left).
-    * @param prevKnocked Whether the previous player has knocked on the table (has 1 card left).
+    * @param knocked The players which have knocked on the table (1 card left).
+    *                In a game of four players, including the player themselves, this
+    *                array can at most have three entries. A value of 1 would correspond
+    *                to the next player, 2 would be the player after, and 3 would be the
+    *                last player (and the player which comes right before the current player).
+    * @param debt The amount of debt (of twos and jokers). Should be zero if there is no debt.
     * @return The recommended card to use on both the short term and the long term, or Grab, which represents grabbing a new card.
     */
-  def adviseMove(topCard: Card, myCards: List[Card], usedCards: List[Card], playerCount: Int, nextKnocked: Boolean, prevKnocked: Boolean): Either[Card, Grab] = {
-    hasSpecialCards(myCards) ? adviseComplexMove(topCard, myCards, usedCards, playerCount, nextKnocked, prevKnocked) | adviseSimpleMove(topCard, myCards, usedCards)
+  def adviseMove(topCard: Card, myCards: List[Card], usedCards: List[Card], playerCount: Int, knocked: List[Int], debt: Int): Either[Card, Grab] = {
+    hasSpecialCards(myCards) ? adviseComplexMove(topCard, myCards, usedCards, playerCount, knocked, debt) | adviseSimpleMove(topCard, myCards, usedCards, debt)
   }
 
-  def adviseSimpleMove(topCard: Card, myCards: List[Card], usedCards: List[Card]): Either[Card, Grab] = {
+  def adviseSimpleMove(topCard: Card, myCards: List[Card], usedCards: List[Card], debt: Int): Either[Card, Grab] = {
+    // If we have debt, there's nothing we can do without special cards
+    if (hasDebt(debt)) return box(grab())
+
     // Check if we can win
     val winCondition = checkDirectWinCondition(topCard, myCards)
     if (winCondition != null) return box(winCondition)
@@ -30,13 +37,15 @@ object pestenAdvisor {
     myFilteredCards.isEmpty ? box(grab()) | box(determineMostCommonCard(myFilteredCards, usedCards))
   }
 
-  def adviseComplexMove(topCard: Card, myCards: List[Card], usedCards: List[Card], playerCount: Int, nextKnocked: Boolean, prevKnocked: Boolean): Either[Card, Grab] = {
+  def adviseComplexMove(topCard: Card, myCards: List[Card], usedCards: List[Card], playerCount: Int, knocked: List[Int], debt: Int): Either[Card, Grab] = {
+    // If there is debt, handle it accordingly
+    if (hasDebt(debt)) return handleDebt(myCards, usedCards, playerCount)
+
     // Check if we can win
     val winCondition = checkWinConditions(topCard, myCards)
     if (winCondition != null) return box(winCondition)
 
     // If not, determine the most logical card to use
-    // TODO
-    box(grab())
+    null // TODO
   }
 }
