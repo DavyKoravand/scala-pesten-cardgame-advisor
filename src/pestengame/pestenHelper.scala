@@ -15,14 +15,14 @@ object pestenHelper {
     specialCards.contains(card.value())
   }
 
-  def determineMostCommonCard(myPossibleCards: List[Card], usedCards: List[Card]) : Card = {
+  def determineMostCommonCard(myPossibleCards: List[Card], usedCards: List[Card]): Card = {
     var cardUsageMap = myPossibleCards.map(card => (card, 0)).toMap
 
     for (myCard <- myPossibleCards)
       for (usedCard <- usedCards)
-        callIf(moveValid(usedCard, myCard), () => cardUsageMap = cardUsageMap.updated(myCard, cardUsageMap(myCard)+1))
+        callIf(moveValid(usedCard, myCard), () => cardUsageMap = cardUsageMap.updated(myCard, cardUsageMap(myCard) + 1))
 
-    cardUsageMap.maxBy{case (_, count) => count}._1
+    cardUsageMap.maxBy { case (_, count) => count }._1
   }
 
   def moveValid(topCard: Card, myCard: Card): Boolean = {
@@ -49,7 +49,7 @@ object pestenHelper {
     cardA.symbol() == cardB.symbol()
   }
 
-  def possibleMoves(topCard: Card, myCards: List[Card]) : List[Card] = {
+  def possibleMoves(topCard: Card, myCards: List[Card]): List[Card] = {
     (myCards.length == 1 && isSpecialCard(myCards.head)) ? List[Card]() | myCards.filter(moveValid(topCard, _))
   }
 
@@ -158,20 +158,25 @@ object pestenHelper {
 
   def determineLogicDebt(topCard: Card, myCards: List[Card], knocked: List[Int]): Card = {
     val validDebtCards = possibleMoves(topCard, findDebtCards(myCards))
-    if (validDebtCards.nonEmpty && knocked.contains(1)) lowestDebtCard(validDebtCards) else null
+    if (validDebtCards.nonEmpty && knocked.contains(1))
+      lowestDebtCard(validDebtCards) else null
   }
 
-  def determineLogicA(topCard: Card, myCards: List[Card], playerCount: Int, knocked: List[Int]): Card ={
+  def determineLogicA(topCard: Card, myCards: List[Card], playerCount: Int, knocked: List[Int]): Card = {
     val validACards = possibleMoves(topCard, filterCardsByValue(myCards, 1))
-    if (validACards.nonEmpty && knocked.contains(minus(playerCount, 1))) random(validACards) else null
+    if (validACards.nonEmpty && knocked.contains(minus(playerCount, 1)))
+      random(validACards) else null
   }
 
   def determineLogicEight(topCard: Card, myCards: List[Card], knocked: List[Int]): Card = {
     val validEightCards = possibleMoves(topCard, filterCardsByValue(myCards, 8))
-    if (validEightCards.nonEmpty && knocked.contains(1)) random(validEightCards) else null
+    if (validEightCards.nonEmpty && knocked.contains(1))
+      random(validEightCards) else null
   }
 
-  def determineLogicJ(): Card = {
-null
+  def determineLogicJ(topCard: Card, myCards: List[Card]): Card = {
+    val validJCards = filterCardsByValue(myCards, 11)
+    if (validJCards.nonEmpty && (len(possibleMoves(topCard, myCards)) - len(validJCards)) < 1)
+      random(validJCards) else null
   }
 }
